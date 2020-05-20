@@ -2,9 +2,10 @@
 #define _HAZEL_H
 
 // For use by Hazel Applications
-#include "Application.h"
+#include "Hazel/Application.h"
+#include "Hazel/Log.h"
 
 // -- Entry Point --
-#include "EntryPoint.h"
+#include "Hazel/EntryPoint.h"
 
 #endif // _HAZEL_H
