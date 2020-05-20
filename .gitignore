@@ -1,0 +1,6 @@
+# files
+.sconsign.dblite
+*.o
+
+# directory
+bin
