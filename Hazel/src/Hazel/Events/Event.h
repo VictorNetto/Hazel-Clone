@@ -19,7 +19,7 @@ namespace Hazel {
         WindowResize, WindowClose, WindowFocus, WindowLostFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
         KeyPressed, KeyReleased, KeyTyped,
-        MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+        MouseMoved, MouseScrolled, MouseButtonPressed, MouseButtonReleased
     };
 
     enum EventCategory
