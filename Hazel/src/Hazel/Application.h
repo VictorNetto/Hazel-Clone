@@ -1,6 +1,9 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
+#include <memory>
+#include "Window.h"
+
 namespace Hazel {
 
     class Application {
@@ -9,6 +12,10 @@ namespace Hazel {
         virtual ~Application();
 
         void Run();
+    
+    private:
+        std::unique_ptr<Window> m_Window;
+        bool m_Running = true;
     };
 
     // To be defined in client
