@@ -18,7 +18,7 @@ namespace Hazel {
         void PushOverlay(Layer * overlay);
 
         void OnEvent(Event& e);
-         void Run();
+        void Run();
     private:
         bool OnWindowClose(WindowCloseEvent& e);
 

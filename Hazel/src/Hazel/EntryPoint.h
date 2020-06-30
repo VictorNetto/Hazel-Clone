@@ -7,9 +7,9 @@ int main()
 {
     Hazel::Log::Init();
     
-    HZ_CORE_ERROR("Some Error!");
-    int a = 5;
-    HZ_CLIENT_INFO("Some fatal error Var={1} VAR={0}", 1, a);
+    // HZ_CORE_ERROR("Some Error!");
+    // int a = 5;
+    // HZ_CLIENT_INFO("Some fatal error Var={1} VAR={0}", 1, a);
 
     auto app = Hazel::CreateApplication();
     app->Run();

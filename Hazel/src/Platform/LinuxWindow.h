@@ -3,6 +3,7 @@
 
 #include "Hazel/Window.h"
 
+#include <Glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace Hazel {
