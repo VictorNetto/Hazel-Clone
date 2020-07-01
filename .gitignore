@@ -1,7 +1,8 @@
 # files
-.sconsign.dblite
 *.o
+Makefile
 
 # directory
 bin
+bin-int
 .vscode
