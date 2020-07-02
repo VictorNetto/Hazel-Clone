@@ -1,8 +1,10 @@
 # files
-*.o
-Makefile
+**.o
+**.a
+**.d
+**Makefile
 
 # directory
-bin
-bin-int
+**/bin/
+**/bin-int/
 .vscode
