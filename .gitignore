@@ -1,8 +1,6 @@
 # files
-**.o
-**.a
-**.d
-**Makefile
+*.o
+Makefile
 
 # directory
 **/bin/
