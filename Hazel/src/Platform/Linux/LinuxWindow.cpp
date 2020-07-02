@@ -1,4 +1,4 @@
-#include "Platform/LinuxWindow.h"
+#include "Platform/Linux/LinuxWindow.h"
 
 #include "Hazel/Log.h"
 #include "Hazel/Core.h"
@@ -43,6 +43,11 @@ namespace Hazel {
         if (!s_GLFWInitialized) {
             int success = glfwInit();
             HZ_CORE_ASSERT(success, "Coludnot initialize GLFW!");
+
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+            // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
             glfwSetErrorCallback(GLFWErrorCallback);
             s_GLFWInitialized = true;
         }
@@ -142,9 +147,6 @@ namespace Hazel {
 
     void LinuxWindow::OnUpdate()
     {
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
         glfwPollEvents();
         glfwSwapBuffers(m_Window);
     }

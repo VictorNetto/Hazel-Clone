@@ -20,10 +20,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
 IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
+IncludeDir["ImGui"] = "Hazel/vendor/imgui"
 
 group "Dependencies"
     include "Hazel/vendor/GLFW"
     include "Hazel/vendor/Glad"
+    include "Hazel/vendor/imgui"
 group ""
 
 project "Hazel"
@@ -51,13 +53,15 @@ project "Hazel"
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}"
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}"
     }
 
     links
     {
         "GLFW",
         "Glad",
+        "ImGui",
 
         "GL"
     }
@@ -109,6 +113,7 @@ project "Sandbox"
         "Hazel",
         "GLFW",
         "Glad",
+        "ImGui",
 
         -- taken from https://learnopengl.com/Getting-started/Creating-a-window
         "GL",
