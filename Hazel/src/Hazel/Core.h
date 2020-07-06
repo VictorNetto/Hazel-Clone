@@ -9,4 +9,6 @@
 
 #define BIT(x) (x << x)
 
+#define HZ_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+
 #endif // _CORE_H
