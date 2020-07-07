@@ -1,6 +1,7 @@
 # files
 *.o
 Makefile
+imgui.ini
 
 # directory
 **/bin/
