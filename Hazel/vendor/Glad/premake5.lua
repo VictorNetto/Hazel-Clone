@@ -18,7 +18,8 @@ project "Glad"
         "include"
     }
     
-    filter "system:Unix"
+    filter "system:linux"
+        pic "on"
         systemversion "latest"
 
     filter "configurations:Debug"

@@ -49,6 +49,8 @@ project "Hazel"
 
     defines
     {
+        "_CRT_SECURE_NO_WARNINGS",
+        "HZ_PLATFORM_UNIX"
     }
 
     includedirs
@@ -129,7 +131,8 @@ project "Sandbox"
         "dl"
     }
 
-    filter "system:Unix"
+    filter "system:linux"
+        pic "on"
         systemversion "latest"
     
     filter "configurations:Debug"
