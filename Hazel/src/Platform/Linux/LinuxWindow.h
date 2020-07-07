@@ -2,8 +2,8 @@
 #define _LINUX_WINDOW_W
 
 #include "Hazel/Window.h"
+#include "Hazel/Renderer/GraphicsContext.h"
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace Hazel {
@@ -28,6 +28,9 @@ namespace Hazel {
         virtual void Init(const WindowProps& props);
         virtual void Shutdown();
     private:
+        GLFWwindow * m_Window;
+        GraphicsContext * m_Context;
+
         struct WindowData {
             std::string Title;
             unsigned int Width, Height;
@@ -37,8 +40,6 @@ namespace Hazel {
         };
 
         WindowData m_Data;
-
-        GLFWwindow * m_Window;
     };
 
 }
