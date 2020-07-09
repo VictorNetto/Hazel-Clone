@@ -3,6 +3,7 @@
 #include "Hazel/Log.h"
 #include "Hazel/Input.h"
 
+#include <string>
 #include <glad/glad.h>
 
 namespace Hazel {
@@ -21,37 +22,6 @@ namespace Hazel {
 
         m_ImGuiLayer = new ImGuiLayer();
         PushOverlay(m_ImGuiLayer);
-
-        const char * vertexShaderSource = "#version 450 core\n"
-            "layout (location = 0) in vec3 aPos;\n"
-            "void main()\n"
-            "{\n"
-            "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-            "}\0";
-        const char * fragmentShaderSource = "#version 450 core\n"
-            "out vec4 FragColor;\n"
-            "void main()\n"
-            "{\n"
-            "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-            "}\n\0";
-
-        // vertex shader
-        unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-        glCompileShader(vertexShader);
-
-        // fragment shader
-        unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-        glCompileShader(fragmentShader);
-
-        m_ShaderProgram = glCreateProgram();
-        glAttachShader(m_ShaderProgram, vertexShader);
-        glAttachShader(m_ShaderProgram, fragmentShader);
-        glLinkProgram(m_ShaderProgram);
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
 
         glGenVertexArrays(1, &m_VertexArray);
         glBindVertexArray(m_VertexArray);
@@ -75,6 +45,30 @@ namespace Hazel {
         
         unsigned int indices[3] = { 0, 1, 2 };
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        std::string vertexSrc = R"(
+            #version 450 core
+
+            layout (location = 0) in vec3 a_Position;
+
+            void main()
+            {
+                gl_Position = vec4(a_Position, 1.0);
+            }
+        )";
+
+        std::string fragmentSrc = R"(
+            #version 450 core
+
+            out vec4 color;
+
+            void main()
+            {
+                color = vec4(1.0, 0.0, 0.0, 1.0);
+            }
+        )";
+
+        m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
     }
 
     Application::~Application()
@@ -113,7 +107,7 @@ namespace Hazel {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glUseProgram(m_ShaderProgram);
+            m_Shader->Bind();
             glBindVertexArray(m_VertexArray);
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
