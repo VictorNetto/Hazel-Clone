@@ -3,8 +3,9 @@
 #include "Hazel/Log.h"
 #include "Hazel/Input.h"
 
+#include "Hazel/Renderer/Renderer.h"
+
 #include <string>
-#include <glad/glad.h>
 
 namespace Hazel {
 
@@ -158,17 +159,18 @@ namespace Hazel {
     void Application::Run()
     {
         while (m_Running) {
+            RenderCommand::SetClearColor({ 0.2f, 0.3f, 0.3f, 1.0f });
+            RenderCommand::Clear();
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            Renderer::BeginScene();
 
             m_BlueShader->Bind();
-            m_SquareVA->Bind();
-            glDrawElements(GL_TRIANGLES, m_SquareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+            Renderer::Submit(m_SquareVA);
 
             m_Shader->Bind();
-            m_VertexArray->Bind();
-            glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+            Renderer::Submit(m_VertexArray);
+
+            Renderer::EndScene();
 
             for (Layer * layer : m_LayerStack)
                 layer->OnUpdate();
