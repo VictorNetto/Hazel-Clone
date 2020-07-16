@@ -9,6 +9,8 @@ std::shared_ptr<Hazel::VertexArray> vertexArray;
 std::shared_ptr<Hazel::Shader> blueShader;
 std::shared_ptr<Hazel::VertexArray> squareVA;
 
+Hazel::OrthographicCamera camera(-1.6f, 1.6f, -1.2f, 1.2f);
+
 void InitVAs()
 {
     vertexArray.reset(Hazel::VertexArray::Create());
@@ -69,12 +71,14 @@ void InitShaders()
         layout (location = 0) in vec3 a_Position;
         layout (location = 1) in vec4 a_Color;
 
+        uniform mat4 u_ViewProjection;
+
         out vec4 v_Color;
 
         void main()
         {
             v_Color = a_Color;
-            gl_Position = vec4(a_Position, 1.0);
+            gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
 
@@ -96,9 +100,11 @@ void InitShaders()
 
         layout (location = 0) in vec3 a_Position;
 
+        uniform mat4 u_ViewProjection;
+
         void main()
         {
-            gl_Position = vec4(a_Position, 1.0);
+            gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
     )";
 
@@ -117,6 +123,12 @@ void InitShaders()
     blueShader.reset(new Hazel::Shader(blueShaderVertexSrc, blueShaderFragmentSrc));
 }
 
+void InitCamera()
+{
+    camera.SetRotation(30.0f);
+    camera.SetPosition({ 0.5f, 0.5f, 0.0f });
+}
+
 class ExampleLayer : public Hazel::Layer {
 public:
     ExampleLayer()
@@ -124,15 +136,22 @@ public:
     
     void OnUpdate() override
     {
-        Hazel::Renderer::BeginScene();
+        camera.SetRotation(camera.GetRotation() + 1);
 
-        blueShader->Bind();
-        Hazel::Renderer::Submit(squareVA);
+        Hazel::Renderer::BeginScene(camera);
 
-        shader->Bind();
-        Hazel::Renderer::Submit(vertexArray);
+        Hazel::Renderer::Submit(blueShader, squareVA);
+
+        Hazel::Renderer::Submit(shader, vertexArray);
 
         Hazel::Renderer::EndScene();
+    }
+
+    virtual void OnImGuiRender() override
+    {
+        ImGui::Begin("Teste");
+        ImGui::Text("Hello World");
+        ImGui::End();
     }
 
     void OnEvent(Hazel::Event& event) override
@@ -150,6 +169,7 @@ public:
 
         InitVAs();
         InitShaders();
+        InitCamera();
     }
 
     ~Sandbox()
