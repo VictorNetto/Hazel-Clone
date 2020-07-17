@@ -2,8 +2,11 @@
 
 #include "Hazel/Log.h"
 #include "Hazel/Input.h"
+#include "Hazel/Core/Timestep.h"
 
 #include "Hazel/Renderer/Renderer.h"
+
+#include <GLFW/glfw3.h>
 
 namespace Hazel {
 
@@ -55,11 +58,15 @@ namespace Hazel {
     void Application::Run()
     {
         while (m_Running) {
+            float time = (float)glfwGetTime();
+            Timestep timestep = time - m_LastFrameTime;
+            m_LastFrameTime = time;
+            
             RenderCommand::SetClearColor({ 0.2f, 0.3f, 0.3f, 1.0f });
             RenderCommand::Clear();
 
             for (Layer * layer : m_LayerStack)
-                layer->OnUpdate();
+                layer->OnUpdate(timestep);
             
             m_ImGuiLayer->Begin();
             for (Layer * layer : m_LayerStack)

@@ -10,6 +10,10 @@ std::shared_ptr<Hazel::Shader> blueShader;
 std::shared_ptr<Hazel::VertexArray> squareVA;
 
 Hazel::OrthographicCamera camera(-1.6f, 1.6f, -1.2f, 1.2f);
+glm::vec2 cameraPosition = { 0.0f, 0.0f };
+float cameraRotation = 0.0f;
+float cameraSpeed = 1.0f;
+float cameraRotationSpeed = 45.0f;
 
 void InitVAs()
 {
@@ -125,8 +129,6 @@ void InitShaders()
 
 void InitCamera()
 {
-    camera.SetRotation(30.0f);
-    camera.SetPosition({ 0.5f, 0.5f, 0.0f });
 }
 
 class ExampleLayer : public Hazel::Layer {
@@ -134,9 +136,28 @@ public:
     ExampleLayer()
         : Layer("Example") {}
     
-    void OnUpdate() override
+    void OnUpdate(Hazel::Timestep ts) override
     {
-        camera.SetRotation(camera.GetRotation() + 1);
+        int framesToAverage = 60;
+        m_FrameRate = (framesToAverage - 1) * m_FrameRate + 1000.0f / (ts.GetMilisecond());
+        m_FrameRate /= framesToAverage;
+
+        if (Hazel::Input::IsKeyPressed(HZ_KEY_UP) || Hazel::Input::IsKeyPressed(HZ_KEY_W))
+            cameraPosition.y += cameraSpeed * ts;
+        else if (Hazel::Input::IsKeyPressed(HZ_KEY_DOWN) || Hazel::Input::IsKeyPressed(HZ_KEY_S))
+            cameraPosition.y -= cameraSpeed * ts;
+        if (Hazel::Input::IsKeyPressed(HZ_KEY_LEFT) || Hazel::Input::IsKeyPressed(HZ_KEY_A))
+            cameraPosition.x -= cameraSpeed * ts;
+        else if (Hazel::Input::IsKeyPressed(HZ_KEY_RIGHT) || Hazel::Input::IsKeyPressed(HZ_KEY_D))
+            cameraPosition.x += cameraSpeed * ts;
+
+        if (Hazel::Input::IsKeyPressed(HZ_KEY_Q))
+            cameraRotation += cameraRotationSpeed * ts;
+        else if (Hazel::Input::IsKeyPressed(HZ_KEY_E))
+            cameraRotation -= cameraRotationSpeed * ts;
+        
+        camera.SetRotation(cameraRotation);
+        camera.SetPosition({ cameraPosition.x, cameraPosition.y, 0.0f });
 
         Hazel::Renderer::BeginScene(camera);
 
@@ -149,8 +170,12 @@ public:
 
     virtual void OnImGuiRender() override
     {
-        ImGui::Begin("Teste");
-        ImGui::Text("Hello World");
+        ImGui::Begin("Info");
+        ImGui::Text("Frame Rate: %.2f", m_FrameRate);
+        ImGui::Text("Renderer API: %s", Hazel::RendererInfo::GetRendererAPI().c_str());
+        ImGui::Text("Vendor: %s", Hazel::RendererInfo::GetVendor().c_str());
+        ImGui::Text("Renderer: %s", Hazel::RendererInfo::GetRenderer().c_str());
+        ImGui::Text("Version: %s", Hazel::RendererInfo::GetVersion().c_str());
         ImGui::End();
     }
 
@@ -158,6 +183,8 @@ public:
     {
         // HZ_CLIENT_TRACE("{0}", event);
     }
+private:
+    float m_FrameRate = 60.0f;
 };
 
 class Sandbox : public Hazel::Application

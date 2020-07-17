@@ -4,7 +4,6 @@
 #include "Hazel/Window.h"
 #include "Hazel/Events/ApplicationEvent.h"
 #include "Hazel/LayerStack.h"
-
 #include "Hazel/ImGui/ImGuiLayer.h"
 
 #include <memory>
@@ -32,6 +31,7 @@ namespace Hazel {
         ImGuiLayer * m_ImGuiLayer;
         bool m_Running = true;
         LayerStack m_LayerStack;
+        float m_LastFrameTime = 0.0f;
     private:
         static Application* s_Instance;
     };
