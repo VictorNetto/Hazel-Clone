@@ -4,11 +4,14 @@
 #include <memory>
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Platform/OpenGL/OpenGLShader.h"
 
 std::shared_ptr<Hazel::Shader> shader;
 std::shared_ptr<Hazel::VertexArray> vertexArray;
 
-std::shared_ptr<Hazel::Shader> blueShader;
+std::shared_ptr<Hazel::Shader> flatColorShader;
 std::shared_ptr<Hazel::VertexArray> squareVA;
 
 Hazel::OrthographicCamera camera(-1.6f, 1.6f, -1.2f, 1.2f);
@@ -16,6 +19,8 @@ glm::vec2 cameraPosition = { 0.0f, 0.0f };
 float cameraRotation = 0.0f;
 float cameraSpeed = 1.0f;
 float cameraRotationSpeed = 45.0f;
+
+glm::vec3 squareColor = { 0.2f, 0.3f, 0.8f };
 
 void InitVAs()
 {
@@ -46,10 +51,10 @@ void InitVAs()
     squareVA.reset(Hazel::VertexArray::Create());
 
     float squareVertices[3 * 4] = {
-        -0.75f, -0.75f, 0.0f,
-         0.75f, -0.75f, 0.0f,
-         0.75f,  0.75f, 0.0f,
-        -0.75f,  0.75f, 0.0f
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.5f,  0.5f, 0.0f,
+        -0.5f,  0.5f, 0.0f
     };
     std::shared_ptr<Hazel::VertexBuffer> squareVB;
     squareVB.reset(Hazel::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
@@ -102,7 +107,7 @@ void InitShaders()
         }
     )";
 
-    std::string blueShaderVertexSrc = R"(
+    std::string flatColorShaderVertexSrc = R"(
         #version 450 core
 
         layout (location = 0) in vec3 a_Position;
@@ -116,19 +121,21 @@ void InitShaders()
         }
     )";
 
-    std::string blueShaderFragmentSrc = R"(
+    std::string flatColorShaderFragmentSrc = R"(
         #version 450 core
 
         layout(location = 0) out vec4 color;
 
+        uniform vec3 u_Color;
+
         void main()
         {
-            color = vec4(0.2, 0.3, 0.8, 1.0);
+            color = vec4(u_Color, 1.0);
         }
     )";
 
-    shader.reset(new Hazel::Shader(vertexSrc, fragmentSrc));
-    blueShader.reset(new Hazel::Shader(blueShaderVertexSrc, blueShaderFragmentSrc));
+    shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
+    flatColorShader.reset(Hazel::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
 }
 
 void InitCamera()
@@ -142,7 +149,7 @@ public:
     
     void OnUpdate(Hazel::Timestep ts) override
     {
-        int framesToAverage = 60;
+        int framesToAverage = 10;
         m_FrameRate = (framesToAverage - 1) * m_FrameRate + 1000.0f / (ts.GetMilisecond());
         m_FrameRate /= framesToAverage;
 
@@ -165,7 +172,19 @@ public:
 
         Hazel::Renderer::BeginScene(camera);
 
-        Hazel::Renderer::Submit(blueShader, squareVA, glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.25f, 0.0f)));
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+        std::dynamic_pointer_cast<Hazel::OpenGLShader>(flatColorShader)->Bind();
+        std::dynamic_pointer_cast<Hazel::OpenGLShader>(flatColorShader)->UploadUniformFloat3("u_Color", squareColor);
+
+        for (int y = 0; y < 20; y++) {
+            for (int x = 0; x < 20; x++) {
+                glm::vec3 pos(x * 0.11f, y * 0.11f, 0.0f);
+                glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+
+                Hazel::Renderer::Submit(flatColorShader, squareVA, transform);
+            }
+        }
 
         Hazel::Renderer::Submit(shader, vertexArray);
 
@@ -180,6 +199,10 @@ public:
         ImGui::Text("Vendor: %s", Hazel::RendererInfo::GetVendor().c_str());
         ImGui::Text("Renderer: %s", Hazel::RendererInfo::GetRenderer().c_str());
         ImGui::Text("Version: %s", Hazel::RendererInfo::GetVersion().c_str());
+        ImGui::End();
+
+        ImGui::Begin("Settings");
+        ImGui::ColorEdit3("Square Color", glm::value_ptr(squareColor));
         ImGui::End();
     }
 
