@@ -3,6 +3,8 @@
 #include <string>
 #include <memory>
 
+#include <glm/gtx/transform.hpp>
+
 std::shared_ptr<Hazel::Shader> shader;
 std::shared_ptr<Hazel::VertexArray> vertexArray;
 
@@ -76,13 +78,14 @@ void InitShaders()
         layout (location = 1) in vec4 a_Color;
 
         uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
 
         out vec4 v_Color;
 
         void main()
         {
             v_Color = a_Color;
-            gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+            gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
         }
     )";
 
@@ -105,10 +108,11 @@ void InitShaders()
         layout (location = 0) in vec3 a_Position;
 
         uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
 
         void main()
         {
-            gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+            gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
         }
     )";
 
@@ -161,7 +165,7 @@ public:
 
         Hazel::Renderer::BeginScene(camera);
 
-        Hazel::Renderer::Submit(blueShader, squareVA);
+        Hazel::Renderer::Submit(blueShader, squareVA, glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.25f, 0.0f)));
 
         Hazel::Renderer::Submit(shader, vertexArray);
 
