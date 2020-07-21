@@ -83,8 +83,9 @@ namespace Hazel {
     void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
     {
         GLuint program = glCreateProgram();
-        std::vector<GLenum> glShadersIDs(shaderSources.size());
-
+        HZ_CORE_ASSERT(shaderSources.size() <= 2; "We only support 2 shaders for now!");
+        std::array<GLenum, 2> glShadersIDs;
+        int glShaderIDIndex = 0;
         for (auto& kv : shaderSources) {
             GLenum type = kv.first;
             const std::string& source = kv.second;
@@ -114,7 +115,7 @@ namespace Hazel {
                 break;
             }
             glAttachShader(program, shader);
-            glShadersIDs.push_back(shader);
+            glShadersIDs[glShaderIDIndex++] = shader;
         }
 
         // Link our program
