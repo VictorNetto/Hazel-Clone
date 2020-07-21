@@ -3,13 +3,10 @@
 #include "Hazel/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 
-#include <iostream>
-
 namespace Hazel {
 
     Ref<Texture2D> Texture2D::Create(const std::string& path)
     {
-        std::cout << "imhere - Create\n";
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None:     HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
