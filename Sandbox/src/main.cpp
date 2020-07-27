@@ -11,8 +11,10 @@
 Hazel::Ref<Hazel::Shader> shader;
 Hazel::Ref<Hazel::VertexArray> vertexArray;
 
-Hazel::Ref<Hazel::Shader> flatColorShader, textureShader;
+Hazel::Ref<Hazel::Shader> flatColorShader;
 Hazel::Ref<Hazel::VertexArray> squareVA;
+
+Hazel::ShaderLibrary shaderLibrary;
 
 Hazel::Ref<Hazel::Texture2D> texture;
 Hazel::Ref<Hazel::Texture2D> chernoLogoTexture;
@@ -138,9 +140,11 @@ void InitShaders()
         }
     )";
 
-    shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
-    flatColorShader.reset(Hazel::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
-    textureShader.reset(Hazel::Shader::Create("Sandbox/assets/shaders/Texture.glsl"));
+    shader = Hazel::Shader::Create("shader", vertexSrc, fragmentSrc);
+    flatColorShader = Hazel::Shader::Create("flatColorShader", flatColorShaderVertexSrc, flatColorShaderFragmentSrc);
+    shaderLibrary.Load("Sandbox/assets/shaders/Texture.glsl");
+
+    auto textureShader = shaderLibrary.Get("Texture");
 
     std::dynamic_pointer_cast<Hazel::OpenGLShader>(textureShader)->Bind();
     std::dynamic_pointer_cast<Hazel::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
@@ -203,6 +207,7 @@ public:
         }
 
         texture->Bind();
+        auto textureShader = shaderLibrary.Get("Texture");
         Hazel::Renderer::Submit(textureShader, squareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
         chernoLogoTexture->Bind();
