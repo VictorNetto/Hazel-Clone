@@ -19,11 +19,7 @@ Hazel::ShaderLibrary shaderLibrary;
 Hazel::Ref<Hazel::Texture2D> texture;
 Hazel::Ref<Hazel::Texture2D> chernoLogoTexture;
 
-Hazel::OrthographicCamera camera(-1.2f, 1.2f, -0.9f, 0.9f);
-glm::vec2 cameraPosition = { 0.0f, 0.0f };
-float cameraRotation = 0.0f;
-float cameraSpeed = 1.0f;
-float cameraRotationSpeed = 45.0f;
+Hazel::OrthographicCameraController cameraController(1200.0f / 900.0f, true);
 
 glm::vec3 squareColor = { 0.2f, 0.3f, 0.8f };
 
@@ -173,24 +169,11 @@ public:
         m_FrameRate = (framesToAverage - 1) * m_FrameRate + 1000.0f / (ts.GetMilisecond());
         m_FrameRate /= framesToAverage;
 
-        if (Hazel::Input::IsKeyPressed(HZ_KEY_UP) || Hazel::Input::IsKeyPressed(HZ_KEY_W))
-            cameraPosition.y += cameraSpeed * ts;
-        else if (Hazel::Input::IsKeyPressed(HZ_KEY_DOWN) || Hazel::Input::IsKeyPressed(HZ_KEY_S))
-            cameraPosition.y -= cameraSpeed * ts;
-        if (Hazel::Input::IsKeyPressed(HZ_KEY_LEFT) || Hazel::Input::IsKeyPressed(HZ_KEY_A))
-            cameraPosition.x -= cameraSpeed * ts;
-        else if (Hazel::Input::IsKeyPressed(HZ_KEY_RIGHT) || Hazel::Input::IsKeyPressed(HZ_KEY_D))
-            cameraPosition.x += cameraSpeed * ts;
+        // Update
+        cameraController.OnUpdate(ts);
 
-        if (Hazel::Input::IsKeyPressed(HZ_KEY_Q))
-            cameraRotation += cameraRotationSpeed * ts;
-        else if (Hazel::Input::IsKeyPressed(HZ_KEY_E))
-            cameraRotation -= cameraRotationSpeed * ts;
-        
-        camera.SetRotation(cameraRotation);
-        camera.SetPosition({ cameraPosition.x, cameraPosition.y, 0.0f });
-
-        Hazel::Renderer::BeginScene(camera);
+        // Render
+        Hazel::Renderer::BeginScene(cameraController.GetCamera());
 
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
@@ -234,9 +217,9 @@ public:
         ImGui::End();
     }
 
-    void OnEvent(Hazel::Event& event) override
+    void OnEvent(Hazel::Event& e) override
     {
-        // HZ_CLIENT_TRACE("{0}", event);
+        cameraController.OnEvent(e);
     }
 private:
     float m_FrameRate = 60.0f;
