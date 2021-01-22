@@ -1,7 +1,7 @@
 #ifndef _LINUX_INPUT_H
 #define _LINUX_INPUT_H
 
-#include "Hazel/Input.h"
+#include "Hazel/Core/Input.h"
 
 namespace Hazel {
 

@@ -1,6 +1,6 @@
 #include "Hazel/Renderer/Shader.h"
 
-#include "Hazel/Core.h"
+#include "Hazel/Core/Core.h"
 #include "Hazel/Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"

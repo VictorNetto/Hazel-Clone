@@ -1,7 +1,7 @@
 #ifndef _BUFFER_H
 #define _BUFFER_H
 
-#include "Hazel/Core.h"
+#include "Hazel/Core/Core.h"
 
 #include <cstdint>
 #include <string>

@@ -1,8 +1,8 @@
 #ifndef _LAYER_STACK_H
 #define _LAYER_STACK_H
 
-#include "Hazel/Core.h"
-#include "Hazel/Layer.h"
+#include "Hazel/Core/Core.h"
+#include "Hazel/Core/Layer.h"
 
 #include <vector>
 

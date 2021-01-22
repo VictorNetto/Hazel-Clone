@@ -1,7 +1,7 @@
-#include "Hazel/Application.h"
+#include "Hazel/Core/Application.h"
 
-#include "Hazel/Log.h"
-#include "Hazel/Input.h"
+#include "Hazel/Core/Log.h"
+#include "Hazel/Core/Input.h"
 #include "Hazel/Core/Timestep.h"
 
 #include "Hazel/Renderer/Renderer.h"

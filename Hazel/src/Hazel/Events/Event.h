@@ -1,7 +1,7 @@
 #ifndef _EVENT_H
 #define _EVENT_H
 
-#include "Hazel/Core.h"
+#include "Hazel/Core/Core.h"
 
 #include <string>
 #include <functional>

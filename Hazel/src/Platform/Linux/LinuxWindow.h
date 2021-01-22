@@ -1,7 +1,7 @@
 #ifndef _LINUX_WINDOW_H
 #define _LINUX_WINDOW_W
 
-#include "Hazel/Window.h"
+#include "Hazel/Core/Window.h"
 #include "Hazel/Renderer/GraphicsContext.h"
 
 #include <GLFW/glfw3.h>

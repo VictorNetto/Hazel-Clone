@@ -1,9 +1,9 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
-#include "Hazel/Window.h"
+#include "Hazel/Core/Window.h"
 #include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/LayerStack.h"
+#include "Hazel/Core/LayerStack.h"
 #include "Hazel/ImGui/ImGuiLayer.h"
 
 #include <memory>

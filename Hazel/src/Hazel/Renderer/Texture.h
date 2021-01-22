@@ -1,7 +1,7 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
-#include "Hazel/Core.h"
+#include "Hazel/Core/Core.h"
 
 #include <string>
 #include <cinttypes>

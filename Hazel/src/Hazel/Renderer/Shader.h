@@ -1,7 +1,7 @@
 #ifndef _SHADER_H
 #define _SHADER_H
 
-#include "Hazel/Core.h"
+#include "Hazel/Core/Core.h"
 
 #include <string>
 #include <unordered_map>
