@@ -24,7 +24,4 @@
 #include "Hazel/ImGui/ImGuiLayer.h"
 #include "imgui/imgui.h"
 
-// -- Entry Point --
-#include "Hazel/Core/EntryPoint.h"
-
 #endif // _HAZEL_H
