@@ -13,34 +13,7 @@ Sandbox2D::Sandbox2D()
 }
 
 void Sandbox2D::OnAttach()
-{
-    m_SquareVA = Hazel::VertexArray::Create();
-
-    float squareVertices[3 * 4] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f
-    };
-    Hazel::Ref<Hazel::VertexBuffer> squareVB;
-    squareVB.reset(Hazel::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
-
-    squareVB->SetLayout({
-        { Hazel::ShaderDataType::Float3, "a_Position" },
-    });
-
-    uint32_t squareIndices[6] = {
-        0, 1, 2,
-        0, 2, 3
-    };
-    Hazel::Ref<Hazel::IndexBuffer> squareIB;
-    squareIB.reset(Hazel::IndexBuffer::Create(squareIndices, 6));
-
-    m_SquareVA->AddVertexBuffer(squareVB);
-    m_SquareVA->SetIndexBuffer(squareIB);
-
-    m_FlatColorShader = Hazel::Shader::Create("Sandbox/assets/shaders/FlatColor.glsl");
-}
+{}
 
 void Sandbox2D::OnDetach()
 {}
@@ -65,7 +38,6 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 void Sandbox2D::OnImGuiRender()
 {
     ImGui::Begin("Settings");
-    ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
     ImGui::End();
 }
 
