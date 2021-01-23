@@ -1,7 +1,5 @@
 #include "Sandbox2D.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
-
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -30,7 +28,9 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 
     Hazel::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-    Hazel::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, { 0.8f, 0.2f, 0.3f, 1.0f });
+    Hazel::Renderer2D::DrawQuad({ -1.0f, 0.1f }, { 0.8f, 0.8f }, { 0.8f, 0.2f, 0.3f, 1.0f });
+    Hazel::Renderer2D::DrawQuad({ 0.5f, 0.5f }, { 1.2f, 0.6f }, { 0.2f, 0.8f, 0.3f, 1.0f });
+
 
     Hazel::Renderer2D::EndScene();
 }
