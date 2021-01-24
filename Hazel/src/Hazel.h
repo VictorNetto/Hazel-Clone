@@ -28,4 +28,6 @@
 
 #include "Hazel/Renderer/RendererInfo.h"
 
+#include "Hazel/Debug/Instrumentor.h"
+
 #endif // _HAZEL_H
