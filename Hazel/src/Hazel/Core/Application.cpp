@@ -6,6 +6,8 @@
 
 #include "Hazel/Renderer/Renderer.h"
 
+#include "Hazel/Debug/Instrumentor.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Hazel {
@@ -16,6 +18,8 @@ namespace Hazel {
 
     Application::Application()
     {
+        HZ_PROFILE_FUNCTION();
+
         HZ_CORE_ASSERT(!s_Instance, "Application already exists!");
         s_Instance = this;
 
@@ -30,16 +34,23 @@ namespace Hazel {
 
     Application::~Application()
     {
+        HZ_PROFILE_FUNCTION();
+
+        Renderer::Shutdown();
     }
 
     void Application::PushLayer(Layer * layer)
     {
+        HZ_PROFILE_FUNCTION();
+
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
     }
 
     void Application::PushOverlay(Layer * layer)
     {
+        HZ_PROFILE_FUNCTION();
+
         m_LayerStack.PushOverlay(layer);
         layer->OnAttach();
 
@@ -47,6 +58,8 @@ namespace Hazel {
 
     void Application::OnEvent(Event& e)
     {
+        HZ_PROFILE_FUNCTION();
+
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResize));
@@ -60,6 +73,8 @@ namespace Hazel {
 
     void Application::Run()
     {
+        HZ_PROFILE_FUNCTION();
+
         while (m_Running) {
             float time = (float)glfwGetTime();
             Timestep timestep = time - m_LastFrameTime;
@@ -91,6 +106,8 @@ namespace Hazel {
 
     bool Application::OnWindowResize(WindowResizeEvent& e)
     {
+        HZ_PROFILE_FUNCTION();
+        
         if (e.GetWidth() == 0 || e.GetHeight() == 0)
         {
             m_Minimized = true;

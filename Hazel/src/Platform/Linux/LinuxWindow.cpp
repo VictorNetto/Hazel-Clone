@@ -7,6 +7,8 @@
 #include "Hazel/Events/KeyEvent.h"
 #include "Hazel/Events/MouseEvent.h"
 
+#include "Hazel/Debug/Instrumentor.h"
+
 #include "Platform/OpenGL/OpenGLContext.h"
 
 
@@ -26,16 +28,22 @@ namespace Hazel {
 
     LinuxWindow::LinuxWindow(const WindowProps& props)
     {
+        HZ_PROFILE_FUNCTION();
+
         Init(props);
     }
 
     LinuxWindow::~LinuxWindow()
     {
+        HZ_PROFILE_FUNCTION();
+        
         Shutdown();
     }
 
     void LinuxWindow::Init(const WindowProps& props)
     {
+        HZ_PROFILE_FUNCTION();
+
         m_Data.Title = props.Title;
         m_Data.Width = props.Width;
         m_Data.Height = props.Height;
@@ -43,8 +51,10 @@ namespace Hazel {
         HZ_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
         if (!s_GLFWInitialized) {
+            HZ_PROFILE_SCOPE("glfwInit");
+
             int success = glfwInit();
-            HZ_CORE_ASSERT(success, "Coludnot initialize GLFW!");
+            HZ_CORE_ASSERT(success, "Could not initialize GLFW!");
 
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -54,7 +64,11 @@ namespace Hazel {
             s_GLFWInitialized = true;
         }
 
-        m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr);
+        {
+            HZ_PROFILE_SCOPE("glfwCreateWindow");
+
+            m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr);
+        }
 
         m_Context = new OpenGLContext(m_Window);
         m_Context->Init();
@@ -153,11 +167,15 @@ namespace Hazel {
 
     void LinuxWindow::Shutdown()
     {
+        HZ_PROFILE_FUNCTION();
+
         glfwDestroyWindow(m_Window);
     }
 
     void LinuxWindow::OnUpdate()
     {
+        HZ_PROFILE_FUNCTION();
+
         glfwPollEvents();
         m_Context->SwapBuffers();
     }
