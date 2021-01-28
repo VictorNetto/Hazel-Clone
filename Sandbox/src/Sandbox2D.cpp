@@ -34,6 +34,7 @@ void Sandbox2D::OnAttach()
     HZ_PROFILE_FUNCTION();
 
     m_CheckboardTexture = Hazel::Texture2D::Create("Sandbox/assets/textures/Checkerboard.png");
+    m_ChernoTexture = Hazel::Texture2D::Create("Sandbox/assets/textures/ChernoLogo.png");
 }
 
 void Sandbox2D::OnDetach()
@@ -69,7 +70,8 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
             Hazel::Renderer2D::DrawQuad(position, size, color);
         }
         // Hazel::Renderer2D::DrawRotatedQuad({ 0.5f, 0.5f }, glm::radians(30.0f), { 1.2f, 0.6f }, { 0.2f, 0.8f, 0.3f, 1.0f });
-        // Hazel::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, m_CheckboardTexture, 10.0f, { 0.7f, 0.5f, 0.7f, 1.0f });
+        Hazel::Renderer2D::DrawQuad({ -5.0f, -5.0f, -0.1f }, { 10.0f, 10.0f }, m_CheckboardTexture, 10.0f, { 8.0f, 9.0f, 1.0f, 1.0f });
+        Hazel::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.1f }, { 4.0f, 4.0f }, m_ChernoTexture);
 
         Hazel::Renderer2D::EndScene();
     }

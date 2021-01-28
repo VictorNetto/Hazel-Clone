@@ -16,7 +16,7 @@ public:
     void OnEvent(Hazel::Event& e) override;
 private:
     Hazel::OrthographicCameraController m_CameraController;
-    Hazel::Ref<Hazel::Texture2D> m_CheckboardTexture;
+    Hazel::Ref<Hazel::Texture2D> m_CheckboardTexture, m_ChernoTexture;
 
     struct QuadProp
     {
