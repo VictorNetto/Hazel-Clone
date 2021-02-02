@@ -23,6 +23,7 @@ private:
         glm::vec3 position;
         glm::vec2 size;
         glm::vec4 color;
+        float rotationSpeed;
     };
     const int m_nQuads = 200;
     std::array<QuadProp, 200> m_QuadsProps;

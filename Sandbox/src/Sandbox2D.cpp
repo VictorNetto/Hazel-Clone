@@ -26,6 +26,7 @@ Sandbox2D::Sandbox2D()
         m_QuadsProps[i].position = { RandomFloat(-3.0f, 3.0f), RandomFloat(-3.0f, 3.0f), RandomFloat(-0.1, 0.1) };
         m_QuadsProps[i].size = { RandomFloat(-1.7f, 1.7f), RandomFloat(-1.7f, 1.7f) };
         m_QuadsProps[i].color = { RandomFloat(0.0f, 1.0f), RandomFloat(0.0f, 1.0f), RandomFloat(0.0f, 1.0f), 1.0f };
+        m_QuadsProps[i].rotationSpeed = RandomFloat(-300.0f, 300.0f);
     }
 }
 
@@ -46,13 +47,17 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
 {
     HZ_PROFILE_FUNCTION();
 
+    static float time = 0;
+    time += ts;
+
     // Update
     m_CameraController.OnUpdate(ts);
 
+    // Render
+    Hazel::Renderer2D::ResetStats();
     {
         HZ_PROFILE_SCOPE("Renderer Prep");
 
-        // Render
         Hazel::RenderCommand::SetClearColor({ 0.7f, 0.7f, 0.9f, 1.0f });
         Hazel::RenderCommand::Clear();
     }
@@ -67,11 +72,12 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts)
             glm::vec3 position = m_QuadsProps[i].position;
             glm::vec2 size = m_QuadsProps[i].size;
             glm::vec4 color = m_QuadsProps[i].color;
-            Hazel::Renderer2D::DrawQuad(position, size, color);
+            float rotation = m_QuadsProps[i].rotationSpeed * time;
+            Hazel::Renderer2D::DrawRotatedQuad(position, rotation, size, color);
         }
         // Hazel::Renderer2D::DrawRotatedQuad({ 0.5f, 0.5f }, glm::radians(30.0f), { 1.2f, 0.6f }, { 0.2f, 0.8f, 0.3f, 1.0f });
-        Hazel::Renderer2D::DrawQuad({ -5.0f, -5.0f, -0.1f }, { 10.0f, 10.0f }, m_CheckboardTexture, 10.0f, { 8.0f, 9.0f, 1.0f, 1.0f });
-        Hazel::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.1f }, { 4.0f, 4.0f }, m_ChernoTexture);
+        Hazel::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, m_CheckboardTexture, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+        Hazel::Renderer2D::DrawRotatedQuad({ -5.0f, 5.0f, 0.1f }, time * 45.0f, { 1.0f, 1.0f }, m_ChernoTexture, 2);
 
         Hazel::Renderer2D::EndScene();
     }
@@ -82,6 +88,14 @@ void Sandbox2D::OnImGuiRender()
     HZ_PROFILE_FUNCTION();
 
     ImGui::Begin("Settings");
+    
+    auto stats = Hazel::Renderer2D::GetStats();
+	ImGui::Text("Renderer2D Stats:");
+	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+	ImGui::Text("Quads: %d", stats.QuadCount);
+	ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
+	ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+
     ImGui::End();
 }
 
