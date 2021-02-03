@@ -7,12 +7,13 @@
 #include "Hazel/ImGui/ImGuiLayer.h"
 
 #include <memory>
+#include <string>
 
 namespace Hazel {
 
     class Application {
     public:
-        Application();
+        Application(const std::string& name = "Hazel App");
         virtual ~Application();
 
         void PushLayer(Layer * layer);
