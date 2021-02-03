@@ -17,6 +17,7 @@ public:
 private:
     Hazel::OrthographicCameraController m_CameraController;
     Hazel::Ref<Hazel::Texture2D> m_CheckboardTexture, m_ChernoTexture;
+    Hazel::Ref<Hazel::Framebuffer> m_Framebuffer;
 
     struct QuadProp
     {
