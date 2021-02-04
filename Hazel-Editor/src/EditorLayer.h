@@ -21,6 +21,8 @@ namespace Hazel {
         Ref<Texture2D> m_CheckboardTexture, m_ChernoTexture;
         Ref<Framebuffer> m_Framebuffer;
 
+        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+
         struct QuadProp
         {
             glm::vec3 position;
