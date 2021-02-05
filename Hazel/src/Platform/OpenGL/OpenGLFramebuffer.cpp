@@ -64,7 +64,7 @@ namespace Hazel {
     {
         m_Specification.Width = width;
         m_Specification.Height = height;
-        
+
         Invalidate();
     }
 

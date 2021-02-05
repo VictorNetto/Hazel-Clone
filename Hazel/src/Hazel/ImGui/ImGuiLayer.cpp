@@ -73,6 +73,11 @@ namespace Hazel {
         // ImGui::ShowDemoWindow(&show);
     }
 
+    void ImGuiLayer::OnEvent(Event& event)
+    {
+        
+    }
+
     void ImGuiLayer::Begin()
     {
         HZ_PROFILE_FUNCTION();
