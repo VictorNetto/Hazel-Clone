@@ -18,20 +18,12 @@ namespace Hazel {
         void OnEvent(Event& e) override;
     private:
         OrthographicCameraController m_CameraController;
-        Ref<Texture2D> m_CheckboardTexture, m_ChernoTexture;
         Ref<Framebuffer> m_Framebuffer;
 
-        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+        Ref<Scene> m_ActiveScene;
+        entt::entity m_SquareEntity;
 
-        struct QuadProp
-        {
-            glm::vec3 position;
-            glm::vec2 size;
-            glm::vec4 color;
-            float rotationSpeed;
-        };
-        const int m_nQuads = 200;
-        std::array<QuadProp, 200> m_QuadsProps;
+        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
     };
 
 }
