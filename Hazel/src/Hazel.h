@@ -26,6 +26,7 @@
 #include "Hazel/Renderer/VertexArray.h"
 
 #include "Hazel/Scene/Scene.h"
+#include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/Components.h"
 
 #include "Hazel/Renderer/OrthographicCamera.h"

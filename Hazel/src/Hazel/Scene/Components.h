@@ -5,11 +5,22 @@
 
 namespace Hazel {
 
+    struct TagComponent
+    {
+        std::string Tag;
+
+        TagComponent() = default;
+        TagComponent(const TagComponent&) = default;
+        TagComponent(const std::string& tag)
+            : Tag(tag) {}
+    };
+
     struct TransformComponent
     {
         glm::mat4 Transform;
 
-        TransformComponent() = default;
+        TransformComponent()
+            : Transform(glm::mat4(1.0f)) {}
         TransformComponent(const TransformComponent&) = default;
         TransformComponent(const glm::mat4& transform)
             : Transform(transform) {}
