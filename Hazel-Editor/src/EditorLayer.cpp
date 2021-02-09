@@ -27,10 +27,10 @@ namespace Hazel {
         m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
         m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-        m_CameraEntity.AddComponent<CameraComponent>(glm::ortho(-1.2f, 1.2f, -0.9f, 0.9f, -1.0f, 1.0f));
+        m_CameraEntity.AddComponent<CameraComponent>();
 
         m_SecondaryCameraEntity = m_ActiveScene->CreateEntity("Secondary Camera Entity");
-        m_SecondaryCameraEntity.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+        m_SecondaryCameraEntity.AddComponent<CameraComponent>();
     }
 
     void EditorLayer::OnDetach()
@@ -41,6 +41,17 @@ namespace Hazel {
     void EditorLayer::OnUpdate(Timestep ts)
     {
         HZ_PROFILE_FUNCTION();
+
+        // Resize
+        if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+            m_ViewportSize.x > 0.0f && m_ViewportSize.y >= 0.0f && // zero sized framebuffer is invalid
+            (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+        {
+            m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+
+            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        }
 
         // Update
         m_CameraController.OnUpdate(ts);
@@ -129,7 +140,7 @@ namespace Hazel {
         ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
         ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
-        if (true /*m_SquareEntity*/)
+        if (m_SquareEntity)
         {
             ImGui::Separator();
             auto& tag = m_SquareEntity.GetComponent<TagComponent>().Tag;
@@ -147,6 +158,11 @@ namespace Hazel {
             m_SecondaryCameraEntity.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
         }
 
+        auto& cc = m_CameraEntity.GetComponent<CameraComponent>();
+        float orthoSize = cc.Camera.GetOrthographicSize();
+        if (ImGui::DragFloat("Primary Camera Orthographic Size", &orthoSize))
+            cc.Camera.SetOrthographicSize(orthoSize);
+
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -154,10 +170,7 @@ namespace Hazel {
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize))
         {
-            m_Framebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-            m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
         }
         uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
