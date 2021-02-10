@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "Hazel/Scene/SceneCamera.h"
+#include "Hazel/Scene/ScriptableEntity.h"
 
 namespace Hazel {
 
@@ -49,6 +50,21 @@ namespace Hazel {
 
         CameraComponent() = default;
         CameraComponent(const CameraComponent&) = default;
+    };
+
+    struct NativeScriptComponent
+    {
+        ScriptableEntity* Instance = nullptr;
+
+        ScriptableEntity*(*InstantiateScript)();
+        void (*DestroyScrip)(NativeScriptComponent*);
+
+        template<typename T>
+        void Bind()
+        {
+            InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+            DestroyScrip = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+        }
     };
 
 }

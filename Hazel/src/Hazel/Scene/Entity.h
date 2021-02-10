@@ -3,6 +3,7 @@
 
 #include <entt.hpp>
 
+#include "Hazel/Core/Core.h"
 #include "Hazel/Scene/Scene.h"
 
 namespace Hazel {
