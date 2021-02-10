@@ -179,6 +179,7 @@ project "Hazel-Editor"
     {
         "Hazel/vendor/spdlog/include",
         "Hazel/src",
+        "Hazel-Editor/src",
         "Hazel/vendor",
         "%{IncludeDir.glm}",
         "%{IncludeDir.entt}/include"

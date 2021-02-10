@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include "Panels/SceneHierarchyPanel.h"
+
 namespace Hazel {
     
     class EditorLayer : public Layer
@@ -26,6 +28,9 @@ namespace Hazel {
         bool m_PrimaryCamera = true;
 
         glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+
+        // Panels
+        SceneHierarchyPanel m_SceneHierarchyPanel;
     };
 
 }
