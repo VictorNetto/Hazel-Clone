@@ -6,34 +6,54 @@ namespace Hazel {
 
     SceneCamera::SceneCamera()
     {
-        RecalculateProjectio();
+        RecalculateProjection();
     }
 
     void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
     {
+        m_ProjectionType = ProjectionType::Orthographic;
+
         m_OrthographicSize = size;
         m_OrthographicNear = nearClip;
         m_OrthographicFar = farClip;
 
-        RecalculateProjectio();
+        RecalculateProjection();
+    }
+
+    void SceneCamera::SetPerspective(float verticalFov, float nearClip, float farClip)
+    {
+        m_ProjectionType = ProjectionType::Perspective;
+
+        m_PerspectiveFOV = verticalFov;
+        m_PerspectiveNear = nearClip;
+        m_PerspectiveFar = farClip;
+
+        RecalculateProjection();
     }
 
     void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
     {
         m_AspectRatio = (float)width / (float)height;
 
-        RecalculateProjectio();
+        RecalculateProjection();
     }
 
-    void SceneCamera::RecalculateProjectio()
+    void SceneCamera::RecalculateProjection()
     {
-        float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
-        float orthoRigth = m_OrthographicSize * m_AspectRatio * 0.5f;
-        float orthoBottom = -m_OrthographicSize * 0.5f;
-        float orthoTop = m_OrthographicSize * 0.5f;
+        if (m_ProjectionType == ProjectionType::Perspective)
+        {
+            m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+        }
+        else  // m_ProjectionType == ProjectionType::Orthographic
+        {
+            float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
+            float orthoRigth = m_OrthographicSize * m_AspectRatio * 0.5f;
+            float orthoBottom = -m_OrthographicSize * 0.5f;
+            float orthoTop = m_OrthographicSize * 0.5f;
 
-        m_Projection = glm::ortho(orthoLeft, orthoRigth,
-            orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+            m_Projection = glm::ortho(orthoLeft, orthoRigth,
+                orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+        }
     }
 
 }

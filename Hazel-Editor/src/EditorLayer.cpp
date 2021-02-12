@@ -26,10 +26,14 @@ namespace Hazel {
         m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
         m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
-        m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
+        Entity purpleSquare = m_ActiveScene->CreateEntity("Purple Square");
+        purpleSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
+        purpleSquare.GetComponent<TransformComponent>().Transform[3][0] = 2.5f;
+
+        m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
         m_CameraEntity.AddComponent<CameraComponent>();
 
-        m_SecondaryCameraEntity = m_ActiveScene->CreateEntity("Secondary Camera Entity");
+        m_SecondaryCameraEntity = m_ActiveScene->CreateEntity("Camera B");
         m_SecondaryCameraEntity.AddComponent<CameraComponent>();
         m_SecondaryCameraEntity.GetComponent<CameraComponent>().Primary = false;
 
@@ -205,7 +209,7 @@ namespace Hazel {
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }
         uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-        ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         ImGui::End();
         ImGui::PopStyleVar();
 
