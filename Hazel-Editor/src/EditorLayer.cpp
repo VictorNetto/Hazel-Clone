@@ -28,7 +28,7 @@ namespace Hazel {
 
         Entity purpleSquare = m_ActiveScene->CreateEntity("Purple Square");
         purpleSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
-        purpleSquare.GetComponent<TransformComponent>().Transform[3][0] = 2.5f;
+        purpleSquare.GetComponent<TransformComponent>().Translation.x = 2.5f;
 
         m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
         m_CameraEntity.AddComponent<CameraComponent>();
@@ -41,25 +41,24 @@ namespace Hazel {
         {
         public:
             void OnCreate()
-            {
-            }
+            {}
 
             void OnDestroy()
             {}
 
             void OnUpdate(Timestep ts)
             {
-                auto& transform = GetComponent<TransformComponent>().Transform;
+                auto& translation = GetComponent<TransformComponent>().Translation;
                 float speed = 5.0f;
 
                 if (Input::IsKeyPressed(HZ_KEY_A))
-                    transform[3][0] -= speed * ts;
+                    translation.x -= speed * ts;
                 if (Input::IsKeyPressed(HZ_KEY_D))
-                    transform[3][0] += speed * ts;
+                    translation.x += speed * ts;
                 if (Input::IsKeyPressed(HZ_KEY_W))
-                    transform[3][1] += speed * ts;
+                    translation.y += speed * ts;
                 if (Input::IsKeyPressed(HZ_KEY_S))
-                    transform[3][1] -= speed * ts;
+                    translation.y -= speed * ts;
             }
         };
         m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
