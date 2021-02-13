@@ -126,7 +126,11 @@ namespace Hazel {
                 }
                 else if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
                 {
-                    ImGui::Checkbox("Fixed Aspect Ratio", &cameraComponent.FixedAspectRatio);
+                    if (ImGui::Checkbox("Fixed Aspect Ratio", &cameraComponent.FixedAspectRatio) &&
+                        !cameraComponent.FixedAspectRatio)
+                    {
+                        cameraComponent.Camera.SetViewportSize(m_Context->m_ViewportWidth, m_Context->m_ViewportHeight);
+                    }
 
                     float orthoSize = camera.GetOrthographicSize();
                     if (ImGui::DragFloat("Size", &orthoSize, 0.1f, 0.0f, 0.0f, "%.1f"))
@@ -140,6 +144,17 @@ namespace Hazel {
                     if (ImGui::DragFloat("Far Clip", &orthoFar, 0.1f, 0.0f, 0.0f, "%.1f"))
                         camera.SetOrthographicFarClip(orthoFar);
                 }
+
+                ImGui::TreePop();
+            }
+        }
+
+        if (entity.HasComponent<SpriteRendererComponent>())
+        {
+            if (ImGui::TreeNodeEx((void*)typeid(SpriteRendererComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Sprite"))
+            {
+                auto& src = entity.GetComponent<SpriteRendererComponent>();
+                ImGui::ColorEdit4("Color", glm::value_ptr(src.Color));
 
                 ImGui::TreePop();
             }
