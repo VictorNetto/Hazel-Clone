@@ -20,6 +20,8 @@ namespace Hazel {
 
         void Begin();
         void End();
+
+        void SetDarkThemedColor();
     private:
         float m_Time = 0.0f;
     };
