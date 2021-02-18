@@ -20,11 +20,11 @@ namespace Hazel {
         void OnEvent(Event& e) override;
 
     private:
-        bool OnKeyPressed(KeyPressedEvent& e) { return false; }
-
         void NewScene();
         void OpenScene();
-        void SaveSceneAs();
+        void SaveScene();
+
+        bool OnKeyPressed(KeyPressedEvent& e);
     private:
         Ref<Framebuffer> m_Framebuffer;
 
@@ -34,6 +34,10 @@ namespace Hazel {
 
         // Panels
         SceneHierarchyPanel m_SceneHierarchyPanel;
+
+    private:
+        bool m_NewScene = false;
+        bool m_OpenScene = false;
     };
 
 }

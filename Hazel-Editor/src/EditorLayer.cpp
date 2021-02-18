@@ -114,11 +114,6 @@ namespace Hazel {
         }
         style.WindowMinSize.x = minWinSizeX;
 
-
-        bool newFile = false;
-        bool openFile = false;
-        bool saveFile = false;
-
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -128,13 +123,13 @@ namespace Hazel {
                 //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
                 if (ImGui::MenuItem("New...", "Ctrl+N"))
-                    newFile = true;
+                    NewScene();
                 
                 if (ImGui::MenuItem("Open...", "Ctrl+O"))
-                    openFile = true;
+                    OpenScene();
                 
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
-                    saveFile = true;
+                    SaveScene();
                 
                 if (ImGui::MenuItem("Exit"))
                     Application::Get().Close();
@@ -145,7 +140,7 @@ namespace Hazel {
             ImGui::EndMenuBar();
         }
 
-        if (newFile)
+        if (m_NewScene)
             ImGui::OpenPopup("New Scene");
 
         if (ImGui::BeginPopupModal("New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
@@ -159,6 +154,7 @@ namespace Hazel {
 			    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			    m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
+                m_NewScene = false;
                 strcpy(buffer, "Scene Name");
                 ImGui::CloseCurrentPopup();
             }
@@ -166,6 +162,7 @@ namespace Hazel {
             ImGui::SameLine();
             if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
+                m_NewScene = false;
                 strcpy(buffer, "Scene Name");
                 ImGui::CloseCurrentPopup();
             }
@@ -173,7 +170,7 @@ namespace Hazel {
             ImGui::EndPopup();
         }
 
-        if (openFile)
+        if (m_OpenScene)
             ImGui::OpenPopup("Open Scene");
 
         if (ImGui::BeginPopupModal("Open Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
@@ -213,25 +210,19 @@ namespace Hazel {
                 SceneSerializer serializer(m_ActiveScene);
                 serializer.Deserialize(scenePaths[itemSelected]);
 
+                m_OpenScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
             ImGui::SameLine();
             if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
+                m_OpenScene = false;
                 ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndPopup();
         }  // Open Scene
-
-        if (saveFile)
-        {
-            SceneSerializer serializer(m_ActiveScene);
-            std::string filepath = "Hazel-Editor/scenes/" + m_ActiveScene->GetName() + ".hazel";
-
-            serializer.Serialize(filepath);
-        }
 
         m_SceneHierarchyPanel.OnImGuiRenderer();
 
@@ -260,15 +251,91 @@ namespace Hazel {
     }
 
     void EditorLayer::OnEvent(Event& e)
-    {}
+    {
+        EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+    }
 
-    void NewScene()
-    {}
+    void EditorLayer::NewScene()
+    {
+        m_NewScene = true;
+    }
 
-    void OpenScene()
-    {}
+    void EditorLayer::OpenScene()
+    {
+        m_OpenScene = true;
+    }
 
-    void SaveSceneAs()
-    {}
+    void EditorLayer::SaveScene()
+    {
+        SceneSerializer serializer(m_ActiveScene);
+        std::string filepath = "Hazel-Editor/scenes/" + m_ActiveScene->GetName() + ".hazel";
+
+        serializer.Serialize(filepath);
+    }
+
+    bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
+    {
+        // Shortcuts
+        if (e.GetRepeatCount() > 0)
+            return false;
+
+        bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+        bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+        switch (e.GetKeyCode())
+        {
+            case Key::N:
+            {
+                if (control)
+                    NewScene();
+
+                break;
+            }
+            case Key::O:
+            {
+                if (control)
+                    OpenScene();
+
+                break;
+            }
+            case Key::S:
+            {
+                if (control)
+                    SaveScene();
+
+                break;
+            }
+
+            // // Gizmos
+            // case Key::Q:
+            // {
+            // 	if (!ImGuizmo::IsUsing())
+            // 		m_GizmoType = -1;
+            // 	break;
+            // }
+            // case Key::W:
+            // {
+            // 	if (!ImGuizmo::IsUsing())
+            // 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            // 	break;
+            // }
+            // case Key::E:
+            // {
+            // 	if (!ImGuizmo::IsUsing())
+            // 		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+            // 	break;
+            // }
+            // case Key::R:
+            // {
+            // 	if (!ImGuizmo::IsUsing())
+            // 		m_GizmoType = ImGuizmo::OPERATION::SCALE;
+            // 	break;
+            // }
+        }
+
+        return true;
+        
+    }
 
 }
