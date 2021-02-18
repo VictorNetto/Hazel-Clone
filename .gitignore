@@ -1,8 +1,11 @@
 # files
 *.o
+*.a
+*.d
 Makefile
 imgui.ini
 *.json
+
 
 # directory
 **/bin/
