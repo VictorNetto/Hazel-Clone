@@ -288,7 +288,7 @@ namespace Hazel {
             {
                 float perspectiveVerticaFov = glm::degrees(camera.GetPerspectiveVerticalFOV());
                 if (ImGui::DragFloat("Vertical FOV", &perspectiveVerticaFov, 0.1f, 0.0f, 0.0f, "%.1f"))
-                    camera.SetOrthographicSize(glm::radians(perspectiveVerticaFov));
+                    camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticaFov));
                 
                 float perspectiveNear = camera.GetPerspectiveNearClip();
                 if (ImGui::DragFloat("Near Clip", &perspectiveNear, 0.1f, 0.0f, 0.0f, "%.1f"))
