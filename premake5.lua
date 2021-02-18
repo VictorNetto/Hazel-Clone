@@ -23,13 +23,15 @@ IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
 IncludeDir["ImGui"] = "Hazel/vendor/imgui"
 IncludeDir["glm"] = "Hazel/vendor/glm"
 IncludeDir["stb_image"] = "Hazel/vendor/stb_image"
-IncludeDir["entt"] = "Hazel/vendor/entt"
+IncludeDir["entt"] = "Hazel/vendor/entt/include"
+IncludeDir["yaml_cpp"] = "Hazel/vendor/yaml-cpp/include"
 
 
 group "Dependencies"
     include "Hazel/vendor/GLFW"
     include "Hazel/vendor/Glad"
     include "Hazel/vendor/imgui"
+    include "Hazel/vendor/yaml-cpp"
 group ""
 
 project "Hazel"
@@ -67,7 +69,8 @@ project "Hazel"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
-        "%{IncludeDir.entt}/include"
+        "%{IncludeDir.entt}",
+        "%{IncludeDir.yaml_cpp}"
     }
 
     links
@@ -75,6 +78,7 @@ project "Hazel"
         "GLFW",
         "Glad",
         "ImGui",
+        "yaml-cpp",
 
         "GL"
     }
@@ -120,7 +124,7 @@ project "Sandbox"
         "Hazel/src",
         "Hazel/vendor",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.entt}/include"
+        "%{IncludeDir.entt}"
     }
 
     links
@@ -182,7 +186,7 @@ project "Hazel-Editor"
         "Hazel-Editor/src",
         "Hazel/vendor",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.entt}/include"
+        "%{IncludeDir.entt}"
     }
 
     links
@@ -191,6 +195,7 @@ project "Hazel-Editor"
         "GLFW",
         "Glad",
         "ImGui",
+        "yaml-cpp",
 
         -- taken from https://learnopengl.com/Getting-started/Creating-a-window
         "GL",

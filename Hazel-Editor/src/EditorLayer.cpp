@@ -5,10 +5,15 @@
 
 #include "imgui/imgui.h"
 
+#include "Hazel/Scene/SceneSerializer.h"
+
+#include <filesystem>
+#include <vector>
+
 namespace Hazel {
 
     EditorLayer::EditorLayer()
-        : Layer("EditorLayer"), m_CameraController(1200.0f / 900.0f, true)
+        : Layer("EditorLayer")
     {
     }
 
@@ -21,48 +26,7 @@ namespace Hazel {
         fbSpec.Height = 900;
         m_Framebuffer = Framebuffer::Create(fbSpec);
 
-        m_ActiveScene = std::make_shared<Scene>();
-
-        m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
-        m_SquareEntity.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
-
-        Entity purpleSquare = m_ActiveScene->CreateEntity("Purple Square");
-        purpleSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
-        purpleSquare.GetComponent<TransformComponent>().Translation.x = 2.5f;
-
-        m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
-        m_CameraEntity.AddComponent<CameraComponent>();
-
-        m_SecondaryCameraEntity = m_ActiveScene->CreateEntity("Camera B");
-        m_SecondaryCameraEntity.AddComponent<CameraComponent>();
-        m_SecondaryCameraEntity.GetComponent<CameraComponent>().Primary = false;
-
-        class CameraController : public ScriptableEntity
-        {
-        public:
-            void OnCreate()
-            {}
-
-            void OnDestroy()
-            {}
-
-            void OnUpdate(Timestep ts)
-            {
-                auto& translation = GetComponent<TransformComponent>().Translation;
-                float speed = 5.0f;
-
-                if (Input::IsKeyPressed(HZ_KEY_A))
-                    translation.x -= speed * ts;
-                if (Input::IsKeyPressed(HZ_KEY_D))
-                    translation.x += speed * ts;
-                if (Input::IsKeyPressed(HZ_KEY_W))
-                    translation.y += speed * ts;
-                if (Input::IsKeyPressed(HZ_KEY_S))
-                    translation.y -= speed * ts;
-            }
-        };
-        m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-
+        m_ActiveScene = std::make_shared<Scene>("Empty Scene");
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }
 
@@ -81,18 +45,14 @@ namespace Hazel {
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
         {
             m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
 
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
-        // Update
-        m_CameraController.OnUpdate(ts);
-
         // Render
         Renderer2D::ResetStats();
         m_Framebuffer->Bind();
-        RenderCommand::SetClearColor({ 0.7f, 0.7f, 0.9f, 1.0f });
+        RenderCommand::SetClearColor({ 0.2f, 0.205f, 0.21f, 1.0f });
         RenderCommand::Clear();
 
         // Update Scene
@@ -154,6 +114,11 @@ namespace Hazel {
         }
         style.WindowMinSize.x = minWinSizeX;
 
+
+        bool newFile = false;
+        bool openFile = false;
+        bool saveFile = false;
+
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -162,11 +127,110 @@ namespace Hazel {
                 // which we can't undo at the moment without finer window depth/z control.
                 //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
-                if (ImGui::MenuItem("Exit")) Application::Get().Close();
+                if (ImGui::MenuItem("New...", "Ctrl+N"))
+                    newFile = true;
+                
+                if (ImGui::MenuItem("Open...", "Ctrl+O"))
+                    openFile = true;
+                
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
+                    saveFile = true;
+                
+                if (ImGui::MenuItem("Exit"))
+                    Application::Get().Close();
+
                 ImGui::EndMenu();
             }
 
             ImGui::EndMenuBar();
+        }
+
+        if (newFile)
+            ImGui::OpenPopup("New Scene");
+
+        if (ImGui::BeginPopupModal("New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            static char buffer[256] = "Scene Name";
+            ImGui::InputText("##Scene Name", buffer, sizeof(buffer));
+
+            if (ImGui::Button("Create", ImVec2(120, 0)))
+            {
+                m_ActiveScene = std::make_shared<Scene>(buffer);
+			    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			    m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+                strcpy(buffer, "Scene Name");
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                strcpy(buffer, "Scene Name");
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (openFile)
+            ImGui::OpenPopup("Open Scene");
+
+        if (ImGui::BeginPopupModal("Open Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            std::vector<std::string> scenePaths;
+            std::vector<std::string> sceneNames;
+            std::vector<uint64_t> sceneSizes;
+            
+            for (auto& p : std::filesystem::directory_iterator("Hazel-Editor/scenes/"))
+            {
+                if (p.path().extension() == ".hazel")
+                {
+                    scenePaths.push_back(p.path());
+                    sceneNames.push_back(std::string(p.path()).substr(20));
+                    sceneSizes.push_back(std::filesystem::file_size(p.path()));
+                }
+            }
+
+            static int itemSelected = -1;
+            bool pressed;
+
+            for (int i = 0; i < sceneNames.size(); i++)
+            {
+                pressed = ImGui::Selectable(sceneNames[i].c_str(), itemSelected == i, ImGuiSelectableFlags_DontClosePopups);
+                ImGui::SameLine();
+                ImGui::Text("\t\t%10lu kB", sceneSizes[i] / 1024);
+                if (pressed) itemSelected = i;
+            }
+
+            ImGui::Separator();
+            if (ImGui::Button("OK", ImVec2(120, 0)))
+            {
+                m_ActiveScene = std::make_shared<Scene>(sceneNames[itemSelected]);
+			    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			    m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+                SceneSerializer serializer(m_ActiveScene);
+                serializer.Deserialize(scenePaths[itemSelected]);
+
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }  // Open Scene
+
+        if (saveFile)
+        {
+            SceneSerializer serializer(m_ActiveScene);
+            std::string filepath = "Hazel-Editor/scenes/" + m_ActiveScene->GetName() + ".hazel";
+
+            serializer.Serialize(filepath);
         }
 
         m_SceneHierarchyPanel.OnImGuiRenderer();
@@ -196,8 +260,15 @@ namespace Hazel {
     }
 
     void EditorLayer::OnEvent(Event& e)
-    {
-        m_CameraController.OnEvent(e);
-    }
+    {}
+
+    void NewScene()
+    {}
+
+    void OpenScene()
+    {}
+
+    void SaveSceneAs()
+    {}
 
 }
