@@ -30,6 +30,8 @@ namespace Hazel {
 
         m_ActiveScene = std::make_shared<Scene>("Empty Scene");
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+        m_EditorCamera = EditorCamera(30.0f, 1.333f, 0.1f, 1000.0f);
     }
 
     void EditorLayer::OnDetach()
@@ -47,7 +49,7 @@ namespace Hazel {
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
         {
             m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
+            m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
@@ -57,8 +59,10 @@ namespace Hazel {
         RenderCommand::SetClearColor({ 0.2f, 0.205f, 0.21f, 1.0f });
         RenderCommand::Clear();
 
+        m_EditorCamera.OnUpdate(ts);
+
         // Update Scene
-        m_ActiveScene->OnUpdate(ts);
+        m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 
         m_Framebuffer->Unbind();
     }
@@ -258,10 +262,16 @@ namespace Hazel {
             ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
             // Camera
-            auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-            const auto& camera = cameraEntity.GetComponent<CameraComponent>();
-            const glm::mat4& camearProjection = camera.Camera.GetProjection();
-            glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+            // Runtime camera from entity
+            // auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+            // const auto& camera = cameraEntity.GetComponent<CameraComponent>();
+            // const glm::mat4& camearProjection = camera.Camera.GetProjection();
+            // glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+            // Editor camera
+            glm::mat4 camearProjection = m_EditorCamera.GetProjection();
+            glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
             // Entity
             auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -274,7 +284,6 @@ namespace Hazel {
                 snapValue = 45.0f;  // Snap to 45 degrees for rotation
             
             float snapValues[3] = { snapValue, snapValue, snapValue };
-
 
             ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(camearProjection),
                 (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
@@ -302,6 +311,8 @@ namespace Hazel {
 
     void EditorLayer::OnEvent(Event& e)
     {
+        m_EditorCamera.OnEvent(e);
+
         EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
     }
