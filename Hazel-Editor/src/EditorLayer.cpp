@@ -3,8 +3,10 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "imgui/imgui.h"
+#include <imgui/imgui.h>
+#include <ImGuizmo.h>
 
+#include "Hazel/Math/MathUtils.h"
 #include "Hazel/Scene/SceneSerializer.h"
 
 #include <filesystem>
@@ -244,6 +246,54 @@ namespace Hazel {
         }
         uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        // ImGuizmos
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (selectedEntity && m_GizmoType != -1)
+        {
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+            float windowWidth = (float)ImGui::GetWindowWidth();
+            float windowHeight = (float)ImGui::GetWindowHeight();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+            // Camera
+            auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+            const auto& camera = cameraEntity.GetComponent<CameraComponent>();
+            const glm::mat4& camearProjection = camera.Camera.GetProjection();
+            glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+            // Entity
+            auto& tc = selectedEntity.GetComponent<TransformComponent>();
+            glm::mat4 transform = tc.GetTransform();
+
+            // Snapping
+            bool snap = Input::IsKeyPressed(Key::LeftControl);
+            float snapValue = 0.5f;  // Snap to 0.5m for translation/scale
+            if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+                snapValue = 45.0f;  // Snap to 45 degrees for rotation
+            
+            float snapValues[3] = { snapValue, snapValue, snapValue };
+
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(camearProjection),
+                (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+                nullptr, snap ? snapValues : nullptr);
+            
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation,rotation, scale;
+                Math::DecomposeTransform(transform, translation, rotation, scale);
+
+                glm::vec3 deltaRotation = rotation - tc.Rotation;
+                tc.Translation = translation;
+                tc.Rotation += deltaRotation;
+                tc.Scale = scale;
+
+            }
+        }
+
+
         ImGui::End();
         ImGui::PopStyleVar();
 
@@ -307,31 +357,31 @@ namespace Hazel {
                 break;
             }
 
-            // // Gizmos
-            // case Key::Q:
-            // {
-            // 	if (!ImGuizmo::IsUsing())
-            // 		m_GizmoType = -1;
-            // 	break;
-            // }
-            // case Key::W:
-            // {
-            // 	if (!ImGuizmo::IsUsing())
-            // 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-            // 	break;
-            // }
-            // case Key::E:
-            // {
-            // 	if (!ImGuizmo::IsUsing())
-            // 		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-            // 	break;
-            // }
-            // case Key::R:
-            // {
-            // 	if (!ImGuizmo::IsUsing())
-            // 		m_GizmoType = ImGuizmo::OPERATION::SCALE;
-            // 	break;
-            // }
+            // Gizmos
+            case Key::Q:
+            {
+            	if (!ImGuizmo::IsUsing())
+            		m_GizmoType = -1;
+            	break;
+            }
+            case Key::W:
+            {
+            	if (!ImGuizmo::IsUsing())
+            		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            	break;
+            }
+            case Key::E:
+            {
+            	if (!ImGuizmo::IsUsing())
+            		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+            	break;
+            }
+            case Key::R:
+            {
+            	if (!ImGuizmo::IsUsing())
+            		m_GizmoType = ImGuizmo::OPERATION::SCALE;
+            	break;
+            }
         }
 
         return true;

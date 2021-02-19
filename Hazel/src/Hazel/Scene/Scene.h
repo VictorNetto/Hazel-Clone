@@ -23,6 +23,8 @@ namespace Hazel {
         void OnViewportResize(uint32_t width, uint32_t height);
 
         const std::string& GetName() const { return m_Name; }
+
+        Entity GetPrimaryCameraEntity();
     private:
         template<typename T>
         void OnComponentAdded(Entity entity, T& component);

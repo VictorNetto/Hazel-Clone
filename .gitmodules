@@ -15,3 +15,6 @@
 	path = Hazel/vendor/yaml-cpp
 	url = https://github.com/thecherno/yaml-cpp/
 	ignore = untracked
+[submodule "Hazel/vendor/ImGuizmo"]
+	path = Hazel/vendor/ImGuizmo
+	url = https://github.com/TheCherno/ImGuizmo
