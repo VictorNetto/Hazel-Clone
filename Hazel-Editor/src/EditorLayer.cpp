@@ -26,6 +26,7 @@ namespace Hazel {
         FramebufferSpecification fbSpec;
         fbSpec.Width = 1200;
         fbSpec.Height = 900;
+        fbSpec.Atttachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
         m_Framebuffer = Framebuffer::Create(fbSpec);
 
         m_ActiveScene = std::make_shared<Scene>("Empty Scene");
@@ -248,7 +249,7 @@ namespace Hazel {
         {
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }
-        uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+        uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID(1);
         ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         // ImGuizmos
@@ -298,7 +299,6 @@ namespace Hazel {
                 tc.Translation = translation;
                 tc.Rotation += deltaRotation;
                 tc.Scale = scale;
-
             }
         }
 

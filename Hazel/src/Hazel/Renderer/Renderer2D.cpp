@@ -92,7 +92,7 @@ namespace Hazel {
         for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
             samplers[i] = i;
 
-        s_Data.TextureShader = Shader::Create("Sandbox/assets/shaders/Texture.glsl");
+        s_Data.TextureShader = Shader::Create("Assets/shaders/Renderer2D.glsl");
         s_Data.TextureShader->Bind();
         s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
