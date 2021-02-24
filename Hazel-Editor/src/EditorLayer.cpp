@@ -11,6 +11,7 @@
 
 #include <filesystem>
 #include <vector>
+#include <algorithm>
 
 namespace Hazel {
 
@@ -26,7 +27,7 @@ namespace Hazel {
         FramebufferSpecification fbSpec;
         fbSpec.Width = 1200;
         fbSpec.Height = 900;
-        fbSpec.Atttachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
+        fbSpec.Atttachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
         m_Framebuffer = Framebuffer::Create(fbSpec);
 
         m_ActiveScene = std::make_shared<Scene>("Empty Scene");
@@ -54,16 +55,33 @@ namespace Hazel {
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
+        m_EditorCamera.OnUpdate(ts);
+
         // Render
         Renderer2D::ResetStats();
         m_Framebuffer->Bind();
         RenderCommand::SetClearColor({ 0.2f, 0.205f, 0.21f, 1.0f });
         RenderCommand::Clear();
 
-        m_EditorCamera.OnUpdate(ts);
+        // Clear our entity ID attachment to -1
+		m_Framebuffer->ClearAttachment(1, -1);
 
         // Update Scene
         m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+
+        auto[mx, my] = ImGui::GetMousePos();
+        mx -= m_ViewportBounds[0].x;
+        my -= m_ViewportBounds[0].y;
+        glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+        my = viewportSize.y - my;
+        int mouseX = (int)mx;
+        int mouseY = (int)my;
+
+        if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+        {
+            int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+            // m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+        }
 
         m_Framebuffer->Unbind();
     }
@@ -148,13 +166,23 @@ namespace Hazel {
         }
 
         if (m_NewScene)
+        {
+            ImGui::SetNextWindowSize(ImVec2{ 300, 120 });
             ImGui::OpenPopup("New Scene");
+        }
 
         if (ImGui::BeginPopupModal("New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            static char buffer[256] = "Scene Name";
-            ImGui::InputText("##Scene Name", buffer, sizeof(buffer));
+            static char buffer[256] = { 0 };
+            ImGui::SetCursorPos(ImVec2{ 10, 35 });
+            ImGui::PushItemWidth(280);
+            ImGui::InputTextWithHint("##Scene Name", "Scene Name", buffer, sizeof(buffer));
+            ImGui::PopItemWidth();
 
+            ImGui::SetCursorPos(ImVec2{ 0, 70 });
+            ImGui::Separator();
+
+            ImGui::SetCursorPos(ImVec2{ 10, 85 });
             if (ImGui::Button("Create", ImVec2(120, 0)))
             {
                 m_ActiveScene = std::make_shared<Scene>(buffer);
@@ -162,15 +190,16 @@ namespace Hazel {
 			    m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
                 m_NewScene = false;
-                strcpy(buffer, "Scene Name");
+                memset(buffer, 0, sizeof(buffer));
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
-            ImGui::SameLine();
+            
+            ImGui::SetCursorPos(ImVec2{ 170, 85 });
             if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
                 m_NewScene = false;
-                strcpy(buffer, "Scene Name");
+                memset(buffer, 0, sizeof(buffer));
                 ImGui::CloseCurrentPopup();
             }
 
@@ -178,50 +207,54 @@ namespace Hazel {
         }
 
         if (m_OpenScene)
-            ImGui::OpenPopup("Open Scene");
-
-        if (ImGui::BeginPopupModal("Open Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            std::vector<std::string> scenePaths;
-            std::vector<std::string> sceneNames;
-            std::vector<uint64_t> sceneSizes;
-            
-            for (auto& p : std::filesystem::directory_iterator("Hazel-Editor/scenes/"))
-            {
-                if (p.path().extension() == ".hazel")
-                {
-                    scenePaths.push_back(p.path());
-                    sceneNames.push_back(std::string(p.path()).substr(20));
-                    sceneSizes.push_back(std::filesystem::file_size(p.path()));
-                }
-            }
+            ImGui::SetNextWindowSize(ImVec2{ 400, 400 });
+            ImGui::OpenPopup("Open Scene");
+        }
 
+        if (ImGui::BeginPopupModal("Open Scene", NULL, ImGuiWindowFlags_NoResize))
+        {
             static int itemSelected = -1;
             bool pressed;
 
-            for (int i = 0; i < sceneNames.size(); i++)
+            for (int i = 0; i < m_SceneFileNames.size(); i++)
             {
-                pressed = ImGui::Selectable(sceneNames[i].c_str(), itemSelected == i, ImGuiSelectableFlags_DontClosePopups);
-                ImGui::SameLine();
-                ImGui::Text("\t\t%10lu kB", sceneSizes[i] / 1024);
+                pressed = ImGui::Selectable(m_SceneFileNames[i].c_str(), itemSelected == i, ImGuiSelectableFlags_DontClosePopups);
                 if (pressed) itemSelected = i;
             }
 
+            // Right-click on a blank space
+            if (ImGui::BeginPopupContextWindow(0, 1, false))
+            {
+                if (ImGui::MenuItem("Update Scene Files"))
+                {
+                    UpdateSceneFilesInfos();
+                }
+
+                ImGui::EndPopup();
+            }
+
+
+            ImGui::SetCursorPos(ImVec2{ 0, 350 });
             ImGui::Separator();
+
+            ImGui::SetCursorPos(ImVec2{ 10, 365 });
             if (ImGui::Button("OK", ImVec2(120, 0)))
             {
-                m_ActiveScene = std::make_shared<Scene>(sceneNames[itemSelected]);
+                std::string fileName = m_SceneFileNames[itemSelected];
+                m_ActiveScene = std::make_shared<Scene>(fileName);
 			    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			    m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
                 SceneSerializer serializer(m_ActiveScene);
-                serializer.Deserialize(scenePaths[itemSelected]);
+                serializer.Deserialize("Hazel-Editor/scenes/" + fileName);
 
                 m_OpenScene = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
-            ImGui::SameLine();
+
+            ImGui::SetCursorPos(ImVec2{ 270, 365 });
             if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
                 m_OpenScene = false;
@@ -243,13 +276,25 @@ namespace Hazel {
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-        ImGui::Begin("Viewport");
+        std::string viewportLabel = m_ActiveScene->GetName() + "###Viewport";
+        ImGui::Begin(viewportLabel.c_str());
+
+        auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+        auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+        auto viewportOffset = ImGui::GetWindowPos();
+        m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+        m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+        // m_ViewportFocused = ImGui::IsWindowFocused();
+        // m_ViewportHovered = ImGui::IsWindowHovered();
+        // Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize))
         {
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }
-        uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID(1);
+        uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID(0);
         ImGui::Image((void*)(uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         // ImGuizmos
@@ -258,9 +303,8 @@ namespace Hazel {
         {
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
-            float windowWidth = (float)ImGui::GetWindowWidth();
-            float windowHeight = (float)ImGui::GetWindowHeight();
-            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+            ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
             // Camera
 
@@ -324,6 +368,7 @@ namespace Hazel {
 
     void EditorLayer::OpenScene()
     {
+        UpdateSceneFilesInfos();
         m_OpenScene = true;
     }
 
@@ -333,6 +378,21 @@ namespace Hazel {
         std::string filepath = "Hazel-Editor/scenes/" + m_ActiveScene->GetName() + ".hazel";
 
         serializer.Serialize(filepath);
+    }
+
+    void EditorLayer::UpdateSceneFilesInfos()
+    {
+        m_SceneFileNames.clear();
+        
+        for (auto& p : std::filesystem::directory_iterator("Hazel-Editor/scenes/"))
+        {
+            if (p.path().extension() == ".hazel")
+            {
+                m_SceneFileNames.push_back(std::string(p.path()).substr(20));
+            }
+        }
+        
+        std::sort(m_SceneFileNames.begin(), m_SceneFileNames.end());
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
