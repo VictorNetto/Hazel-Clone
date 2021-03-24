@@ -3,6 +3,7 @@
 
 #include "Hazel/Core/Core.h"
 #include "Hazel/Core/Log.h"
+#include "Hazel/Renderer/Texture.h"
 #include "Hazel/Scene/Scene.h"
 #include "Hazel/Scene/Entity.h"
 
@@ -25,6 +26,9 @@ namespace Hazel {
     private:
         Ref<Scene> m_Context;
         Entity m_SelectionContext;
+    
+    private:
+        static Ref<Texture2D> s_CheckerboardTexture;
     };
 
 }

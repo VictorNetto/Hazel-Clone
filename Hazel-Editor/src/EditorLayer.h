@@ -35,7 +35,7 @@ namespace Hazel {
         int m_GizmoType = -1;
 
         // Panels
-        SceneHierarchyPanel m_SceneHierarchyPanel;
+        SceneHierarchyPanel m_SceneHierarchyPanel{ nullptr };
     
     // Files related methods/members - Save scene, Open scene, ...
     private:

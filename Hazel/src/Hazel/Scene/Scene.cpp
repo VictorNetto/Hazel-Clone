@@ -72,6 +72,7 @@ namespace Hazel {
             for (auto entity : group)
             {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+                // TODO: Texture
                 Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
             }      
 
@@ -87,8 +88,15 @@ namespace Hazel {
         for (auto entity : group)
         {
             auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-            Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
-        }      
+            if (sprite.Texture)
+            {
+                Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.TilingFactor, sprite.Color);
+            }
+            else
+            {
+                Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+            }
+        }
 
         Renderer2D::EndScene();  
     }

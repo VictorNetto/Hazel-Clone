@@ -6,11 +6,17 @@
 
 #include "Hazel/Scene/Components.h"
 
+#include <filesystem>
+
 namespace Hazel {
+
+    Ref<Texture2D> SceneHierarchyPanel::s_CheckerboardTexture = nullptr;
 
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
     {
         SetContext(context);
+
+        SceneHierarchyPanel::s_CheckerboardTexture = Texture2D::Create("Hazel-Editor/assets/textures/Checkerboard.png");
     }
 
     void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
@@ -319,6 +325,61 @@ namespace Hazel {
         DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
         {
             ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+            ImGui::BeginGroup();
+            ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.2f, 0.1f, 0.0f, "%.1f");
+            ImTextureID textureId = (void *)(uint64_t)s_CheckerboardTexture->GetRendererID();
+            ImVec2 uv1 = { 0.5f, 0.5f };
+            if (component.Texture)
+            {
+                textureId = (void *)(uint64_t)component.Texture->GetRendererID();
+                uv1 = ImVec2{ 1, 1 };
+            }
+            if (ImGui::ImageButton(textureId, ImVec2{ 32, 32 },
+                ImVec2{ 0, 0 }, uv1, 1,
+                ImVec4{ 0.1f, 0.1f, 0.1f, 1.0f }, ImVec4{ 1.0f, 1.0f, 1.0f, 1.0f }))
+            {
+                ImGui::SetNextWindowSize(ImVec2{ 300, 120 });
+                ImGui::OpenPopup("Open Texture");
+            }
+
+            if (ImGui::BeginPopupModal("Open Texture", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                static char buffer[256] = { 0 };
+                ImGui::SetCursorPos(ImVec2{ 10, 35 });
+                ImGui::PushItemWidth(280);
+                ImGui::InputTextWithHint("##Texture Path", "Texture Path", buffer, sizeof(buffer));
+                ImGui::PopItemWidth();
+
+                ImGui::SetCursorPos(ImVec2{ 0, 70 });
+                ImGui::Separator();
+
+                ImGui::SetCursorPos(ImVec2{ 10, 85 });
+                if (ImGui::Button("Open", ImVec2(120, 0)))
+                {
+                    if (std::filesystem::exists(buffer))
+                    {
+                        component.Texture = Texture2D::Create(buffer);
+                        component.TextureFilePath = buffer;
+                    }
+
+                    memset(buffer, 0, sizeof(buffer));
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SetItemDefaultFocus();
+                
+                ImGui::SetCursorPos(ImVec2{ 170, 85 });
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    memset(buffer, 0, sizeof(buffer));
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("Texture");
+            ImGui::EndGroup();
         });
     }
 

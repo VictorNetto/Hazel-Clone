@@ -267,6 +267,15 @@ namespace Hazel {
         m_SceneHierarchyPanel.OnImGuiRenderer();
 
         ImGui::Begin("Stats");
+
+        ImGui::Text("Renderer Informations:");
+        ImGui::Text("Renderer API: %s", RendererInfo::GetRendererAPI().c_str());
+        ImGui::Text("Vendor: %s", RendererInfo::GetVendor().c_str());
+        ImGui::Text("Renderer: %s", RendererInfo::GetRenderer().c_str());
+        ImGui::Text("Version: %s", RendererInfo::GetVersion().c_str());
+
+        ImGui::Separator();
+
         auto stats = Renderer2D::GetStats();
         ImGui::Text("Renderer2D Stats:");
         ImGui::Text("Draw Calls: %d", stats.DrawCalls);
@@ -346,9 +355,10 @@ namespace Hazel {
             }
         }
 
-
         ImGui::End();
         ImGui::PopStyleVar();
+
+        ImGui::ShowDemoWindow();
 
         ImGui::End();
     }
